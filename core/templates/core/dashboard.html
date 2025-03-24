@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<p>Bienvenido, {{ request.user.username }}.</p>
+
+<h2>Últimas transacciones</h2>
+<ul>
+    {% for transaccion in transacciones %}
+        <li>{{ transaccion.fecha }} - {{ transaccion.descripcion }} - ${{ transaccion.monto }}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'lista_transacciones' %}">Ver todas las transacciones</a>
+{% endblock %}

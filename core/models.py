@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal
 
 # Modelo Categoria
 class Categoria(models.Model):
@@ -14,6 +15,7 @@ class Categoria(models.Model):
 class MetodoPago(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True, null=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con usuario
 
     def __str__(self):
         return self.nombre
@@ -26,19 +28,19 @@ class Transaccion(models.Model):
     ]
 
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    monto = models.FloatField()
-    fecha = models.DateField()
+    monto = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))  # Cambio a DecimalField
+    fecha = models.DateField(auto_now_add=True)  # Fecha automática
     descripcion = models.TextField(blank=True, null=True)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True)  # No perder registros
+    metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.descripcion} - {self.monto}"
 
 # Modelo Presupuesto
 class Presupuesto(models.Model):
-    monto_limite = models.FloatField()
+    monto_limite = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -49,7 +51,7 @@ class Presupuesto(models.Model):
 # Modelo PresupuestoTransaccion
 class PresupuestoTransaccion(models.Model):
     presupuesto = models.ForeignKey(Presupuesto, on_delete=models.CASCADE)
-    transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE)
+    transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE)  # Una transacción solo en un presupuesto
 
     def __str__(self):
         return f"{self.presupuesto} - {self.transaccion}"
@@ -94,7 +96,7 @@ class ConfiguracionUsuario(models.Model):
 class RegistroSesion(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_hora = models.DateTimeField(auto_now_add=True)
-    ip = models.CharField(max_length=100)
+    ip = models.GenericIPAddressField()  # Cambio de CharField a IPAddressField
     navegador = models.CharField(max_length=200)
 
     def __str__(self):

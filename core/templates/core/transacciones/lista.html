@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Lista de Transacciones</h1>
+
+<a href="{% url 'agregar_transaccion' %}">Agregar Transacción</a>
+
+<ul>
+    {% for transaccion in transacciones %}
+        <li>
+            {{ transaccion.fecha }} - {{ transaccion.descripcion }} - ${{ transaccion.monto }}
+            <a href="{% url 'editar_transaccion' transaccion.id %}">Editar</a>
+            <a href="{% url 'eliminar_transaccion' transaccion.id %}">Eliminar</a>
+        </li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'dashboard' %}">Volver al Dashboard</a>
+{% endblock %}
