@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Transaccion, Categoria, MetodoPago, Presupuesto
 from .forms import TransaccionForm
+from .forms import PresupuestoForm
+from core.forms import PresupuestoForm
 
 # Vista principal del Dashboard
 @login_required
@@ -59,3 +61,41 @@ def eliminar_transaccion(request, transaccion_id):
 def lista_presupuestos(request):
     presupuestos = Presupuesto.objects.filter(usuario=request.user)
     return render(request, 'core/presupuestos/lista.html', {'presupuestos': presupuestos})
+# Vista para agregar un nuevo presupuesto
+@login_required
+def agregar_presupuesto(request):
+    if request.method == 'POST':
+        form = PresupuestoForm(request.POST)
+        if form.is_valid():
+            presupuesto = form.save(commit=False)
+            presupuesto.usuario = request.user
+            presupuesto.save()
+            return redirect('lista_presupuestos')
+    else:
+        form = PresupuestoForm()
+
+    return render(request, 'core/presupuestos/agregar.html', {'form': form})
+
+# Vista para editar un presupuesto
+@login_required
+def editar_presupuesto(request, presupuesto_id):
+    presupuesto = get_object_or_404(Presupuesto, id=presupuesto_id, usuario=request.user)
+    if request.method == 'POST':
+        form = PresupuestoForm(request.POST, instance=presupuesto)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_presupuestos')
+    else:
+        form = PresupuestoForm(instance=presupuesto)
+
+    return render(request, 'core/presupuestos/editar.html', {'form': form})
+
+# Vista para eliminar un presupuesto
+@login_required
+def eliminar_presupuesto(request, presupuesto_id):
+    presupuesto = get_object_or_404(Presupuesto, id=presupuesto_id, usuario=request.user)
+    if request.method == 'POST':
+        presupuesto.delete()
+        return redirect('lista_presupuestos')
+
+    return render(request, 'core/presupuestos/eliminar.html', {'presupuesto': presupuesto})

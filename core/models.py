@@ -19,7 +19,17 @@ class MetodoPago(models.Model):
 
     def __str__(self):
         return self.nombre
+# Modelo Presupuesto
+class Presupuesto(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    monto_limite = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True)  # Opcional
+    metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.SET_NULL, null=True, blank=True)  # Opcional
 
+    def __str__(self):
+        return f"Presupuesto de {self.usuario.username} ({self.fecha_inicio} - {self.fecha_fin})"
 # Modelo Transaccion
 class Transaccion(models.Model):
     TIPO_CHOICES = [
@@ -28,30 +38,24 @@ class Transaccion(models.Model):
     ]
 
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    monto = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))  # Cambio a DecimalField
-    fecha = models.DateField(auto_now_add=True)  # Fecha automática
+    monto = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    fecha = models.DateField(auto_now_add=True)
     descripcion = models.TextField(blank=True, null=True)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True)  # No perder registros
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True)
     metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.SET_NULL, null=True, blank=True)
+    presupuesto_asociado = models.ForeignKey("Presupuesto", on_delete=models.SET_NULL, null=True, blank=True)  # Cambio aquí
 
     def __str__(self):
-        return f"{self.descripcion} - {self.monto}"
-
-# Modelo Presupuesto
-class Presupuesto(models.Model):
-    monto_limite = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField()
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Presupuesto de {self.usuario.username}"
+        return f"{self.tipo.upper()} - {self.monto} ({self.fecha})"
 
 # Modelo PresupuestoTransaccion
 class PresupuestoTransaccion(models.Model):
     presupuesto = models.ForeignKey(Presupuesto, on_delete=models.CASCADE)
-    transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE)  # Una transacción solo en un presupuesto
+    transaccion = models.ForeignKey(Transaccion, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('presupuesto', 'transaccion')  # Evita duplicados
 
     def __str__(self):
         return f"{self.presupuesto} - {self.transaccion}"
