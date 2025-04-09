@@ -1,15 +1,36 @@
 {% extends "core/base.html" %}
-
 {% block content %}
 <div class="container mt-4">
     <h2>Agregar Presupuesto</h2>
-    <form method="POST">
+    <form method="post">
         {% csrf_token %}
+        
         <div class="mb-3">
-            {{ form.as_p }}
+            {{ form.monto_limite.label_tag }}
+            {{ form.monto_limite }}
         </div>
+        
+        <div class="mb-3">
+            {{ form.categoria.label_tag }}
+            {{ form.categoria }}  <!-- 👈 Categorías del usuario -->
+        </div>
+        
+        <div class="mb-3">
+            {{ form.metodo_pago.label_tag }}
+            {{ form.metodo_pago }}  <!-- 👈 Métodos del usuario -->
+        </div>
+        
+        <div class="mb-3">
+            {{ form.fecha_inicio.label_tag }}
+            {{ form.fecha_inicio }}  <!-- 👈 Calendario HTML5 -->
+        </div>
+        
+        <div class="mb-3">
+            {{ form.fecha_fin.label_tag }}
+            {{ form.fecha_fin }}  <!-- 👈 Calendario HTML5 -->
+        </div>
+        
         <button type="submit" class="btn btn-primary">Guardar</button>
-        <a href="{% url 'lista_presupuestos' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

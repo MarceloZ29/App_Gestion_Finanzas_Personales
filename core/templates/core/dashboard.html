@@ -1,14 +1,151 @@
 {% extends "core/base.html" %}
-{% block content %}
-<h1>Dashboard</h1>
-<p>Bienvenido, {{ request.user.username }}.</p>
+{% block page_title %}Dashboard{% endblock %}
 
-<h2>Últimas transacciones</h2>
-<ul>
-    {% for transaccion in transacciones %}
-        <li>{{ transaccion.fecha }} - {{ transaccion.descripcion }} - ${{ transaccion.monto }}</li>
-    {% endfor %}
-</ul>
-
-<a href="{% url 'lista_transacciones' %}">Ver todas las transacciones</a>
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+</style>
 {% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Tarjetas Resumen -->
+    <div class="col-md-4">
+        <div class="card card-shadow dashboard-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase">Ingresos</h6>
+                        <h2>${{ total_ingresos|default:"0" }}</h2>
+                    </div>
+                    <i class="bi bi-arrow-up-circle" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card card-shadow dashboard-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase">Gastos</h6>
+                        <h2>${{ total_gastos|default:"0" }}</h2>
+                    </div>
+                    <i class="bi bi-arrow-down-circle" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card card-shadow dashboard-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase">Balance</h6>
+                        <h2>${{ balance|default:"0" }}</h2>
+                    </div>
+                    <i class="bi bi-graph-up" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Gráfico de Gastos por Categoría -->
+    <div class="col-md-6">
+        <div class="card card-shadow mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-tags"></i> Gastos por Categoría</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoriaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Últimas Transacciones -->
+    <div class="col-md-6">
+        <div class="card card-shadow">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Últimas Transacciones</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Descripción</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in ultimas_transacciones %}
+                            <tr>
+                                <td>{{ t.fecha|date:"d/m" }}</td>
+                                <td>{{ t.descripcion|truncatechars:20 }}</td>
+                                <td class="{% if t.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ t.monto }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No hay transacciones recientes</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- Scripts para gráficos -->
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Configuración del gráfico
+        const config = {
+            type: 'doughnut',
+            data: {
+                labels: JSON.parse('{{ categorias_labels|escapejs }}'),
+                datasets: [{
+                    data: JSON.parse('{{ categorias_data|escapejs }}'),
+                    backgroundColor: [
+                        '#4361ee', '#3f37c9', '#4cc9f0',
+                        '#4895ef', '#560bad', '#f72585'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        };
+
+        // 2. Inicialización del gráfico
+        const ctx = document.getElementById('categoriaChart');
+        if (ctx) {
+            new Chart(ctx, config);
+        }
+    });
+</script>
+{% endblock %}
+

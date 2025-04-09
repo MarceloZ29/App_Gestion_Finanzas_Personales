@@ -1,18 +1,90 @@
 {% extends "core/base.html" %}
 {% block content %}
-<h1>Lista de Transacciones</h1>
+<div class="container mt-4">
+    <h2 class="mb-4">Lista de Transacciones</h2>
+    
+    <a href="{% url 'agregar_transaccion' %}" class="btn btn-success mb-3">
+        <i class="bi bi-plus-circle"></i> Nueva Transacción
+    </a>
 
-<a href="{% url 'agregar_transaccion' %}">Agregar Transacción</a>
+    <!-- Filtros Rápidos -->
+    <div class="mb-3">
+        <a href="?tipo=ingreso" class="btn btn-sm btn-outline-primary">Ingresos</a>
+        <a href="?tipo=gasto" class="btn btn-sm btn-outline-danger">Gastos</a>
+        <a href="{% url 'lista_transacciones' %}" class="btn btn-sm btn-outline-secondary">Todos</a>
+    </div>
 
-<ul>
-    {% for transaccion in transacciones %}
-        <li>
-            {{ transaccion.fecha }} - {{ transaccion.descripcion }} - ${{ transaccion.monto }}
-            <a href="{% url 'editar_transaccion' transaccion.id %}">Editar</a>
-            <a href="{% url 'eliminar_transaccion' transaccion.id %}">Eliminar</a>
-        </li>
-    {% endfor %}
-</ul>
+    <!-- Tabla de Transacciones -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Monto</th>
+                    <th>Categoría</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaccion in transacciones %}
+                <tr>
+                    <td>{{ transaccion.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        <span class="badge bg-{% if transaccion.tipo == 'ingreso' %}success{% else %}danger{% endif %}">
+                            {{ transaccion.get_tipo_display }}
+                        </span>
+                    </td>
+                    <td>{{ transaccion.descripcion|truncatechars:30 }}</td>
+                    <td class="fw-bold {% if transaccion.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                        ${{ transaccion.monto }}
+                    </td>
+                    <td>{{ transaccion.categoria.nombre|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'editar_transaccion' transaccion.id %}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'eliminar_transaccion' transaccion.id %}" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay transacciones registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<a href="{% url 'dashboard' %}">Volver al Dashboard</a>
+    <!-- Resumen -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Ingresos</h5>
+                    <p class="card-text">${{ total_ingresos|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Gastos</h5>
+                    <p class="card-text">${{ total_gastos|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Balance</h5>
+                    <p class="card-text">${{ balance|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

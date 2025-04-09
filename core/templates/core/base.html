@@ -2,18 +2,337 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Gestor de Gastos{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Finanzas Personales | {% block title %}{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Estilos personalizados -->
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fb;
+            padding-top: 56px; /* Para el navbar fijo */
+        }
+        
+        /* Sidebar - Desktop */
+        @media (min-width: 768px) {
+            .sidebar {
+                background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                min-height: 100vh;
+                color: white;
+                width: 250px;
+                position: fixed;
+                z-index: 1000;
+                top: 0;
+                left: 0;
+                padding-top: 20px;
+            }
+            
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+        
+        /* Sidebar - Mobile */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                height: 60px;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                padding: 0 10px;
+            }
+            
+            .sidebar .nav {
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .sidebar .nav-link {
+                padding: 10px;
+                text-align: center;
+                flex-direction: column;
+                font-size: 0.75rem;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 0;
+                margin-bottom: 3px;
+                font-size: 1.2rem;
+            }
+            
+            .sidebar .nav-text {
+                display: block;
+            }
+            
+            .sidebar .brand-text {
+                display: none;
+            }
+            
+            .main-content {
+                padding-bottom: 80px; /* Espacio para el menú inferior */
+            }
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, 
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            transition: transform 0.3s;
+        }
+        
+        .sidebar .nav-link:hover i {
+            transform: scale(1.1);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card-shadow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        /* Navbar superior para móviles */
+        .top-navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            height: 56px;
+        }
+        
+        /* Mejoras para formularios en móviles */
+        @media (max-width: 767.98px) {
+            .form-control, .form-select {
+                font-size: 16px !important; /* Evita zoom en iOS */
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+            }
+        }
+        
+        /* Animación para el menú activo */
+        .nav-link.active {
+            position: relative;
+        }
+        
+        .nav-link.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        @media (min-width: 768px) {
+            .nav-link.active:after {
+                left: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 5px;
+                height: 60%;
+                border-radius: 0 5px 5px 0;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav>
-        <a href="{% url 'dashboard' %}">Inicio</a>
-        <a href="{% url 'lista_transacciones' %}">Transacciones</a>
-        <a href="{% url 'lista_presupuestos' %}">Presupuestos</a>
-        <a href="{% url 'logout' %}">Cerrar Sesión</a>
+    <!-- Navbar Superior (solo móvil) -->
+    <nav class="top-navbar d-md-none navbar navbar-expand">
+        <div class="container-fluid justify-content-between">
+            <a class="navbar-brand text-white" href="#">
+                <i class="bi bi-wallet2 me-2"></i>
+                <span class="d-none d-sm-inline">Finanzas Pro</span>
+            </a>
+            <div>
+                <span class="text-white me-2">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="d-none d-sm-inline">{{ request.user.username|truncatechars:10 }}</span>
+                </span>
+                <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </div>
+        </div>
     </nav>
 
-    {% block content %}
-    {% endblock %}
+    <!-- Sidebar (Desktop) -->
+    <div class="sidebar d-none d-md-block">
+        <div class="text-center mb-4 px-3">
+            <h4 class="d-flex align-items-center justify-content-center">
+                <i class="bi bi-wallet2 me-2"></i>
+                <span class="brand-text">Finanzas Pro</span>
+            </h4>
+        </div>
+        <ul class="nav flex-column px-3">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'transacciones' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'lista_transacciones' %}">
+                    <i class="bi bi-cash-stack"></i>
+                    <span class="nav-text">Transacciones</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'presupuestos' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'lista_presupuestos' %}">
+                    <i class="bi bi-pie-chart"></i>
+                    <span class="nav-text">Presupuestos</span>
+                </a>
+            </li>
+            <hr class="text-white-50 my-3">
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Configuración</span>
+                </a>
+            </li>
+            <li class="nav-item mt-auto d-none d-md-block">
+                <div class="d-flex justify-content-between align-items-center px-2 mt-4">
+                    <span class="small">
+                        <i class="bi bi-person-circle me-1"></i>
+                        {{ request.user.username|truncatechars:15 }}
+                    </span>
+                    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sidebar (Mobile) -->
+    <div class="sidebar d-md-none">
+        <ul class="nav w-100">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'transacciones' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'lista_transacciones' %}">
+                    <i class="bi bi-cash-stack"></i>
+                    <span class="nav-text">Trans.</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'presupuestos' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'lista_presupuestos' %}">
+                    <i class="bi bi-pie-chart"></i>
+                    <span class="nav-text">Presup.</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Config</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header (Desktop) -->
+        <div class="d-none d-md-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom px-4">
+            <h1 class="h2">{% block page_title %}{% endblock %}</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                {% block header_actions %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Contenido Dinámico -->
+        <div class="container-fluid px-3 px-md-4 py-3">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Scripts para mejorar experiencia móvil -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mejorar inputs en móviles
+            if ('ontouchstart' in window) {
+                // Ajustar date inputs para móviles
+                document.querySelectorAll('input[type="date"]').forEach(input => {
+                    input.addEventListener('focus', function() {
+                        this.type = 'date';
+                    });
+                });
+                
+                // Asegurar que los selects sean fácilmente clickeables
+                document.querySelectorAll('select.form-select').forEach(select => {
+                    select.classList.add('form-select-lg');
+                });
+            }
+            
+            // Activar tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

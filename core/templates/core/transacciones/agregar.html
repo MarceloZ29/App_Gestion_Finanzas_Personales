@@ -1,12 +1,12 @@
 {% extends "core/base.html" %}
 {% block content %}
-<h1>Agregar Transacción</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-</form>
-
-<a href="{% url 'lista_transacciones' %}">Volver</a>
-{% endblock %}
+<div class="container mt-4">
+    <h2>Agregar Transacción</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+{% endblock %} 

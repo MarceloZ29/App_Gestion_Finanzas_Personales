@@ -1,13 +1,28 @@
 {% extends "core/base.html" %}
 {% block content %}
-<h1>Eliminar Transacción</h1>
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3><i class="bi bi-exclamation-triangle"></i> Eliminar Transacción</h3>
+        </div>
+        <div class="card-body">
+            <p class="lead">¿Estás seguro de eliminar esta transacción?</p>
+            <ul class="list-group mb-4">
+                <li class="list-group-item"><strong>Fecha:</strong> {{ transaccion.fecha|date:"d/m/Y" }}</li>
+                <li class="list-group-item"><strong>Descripción:</strong> {{ transaccion.descripcion }}</li>
+                <li class="list-group-item"><strong>Monto:</strong> ${{ transaccion.monto }}</li>
+            </ul>
 
-<p>¿Estás seguro de que deseas eliminar la transacción "{{ transaccion.descripcion }}"?</p>
-
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Sí, eliminar</button>
-</form>
-
-<a href="{% url 'lista_transacciones' %}">Cancelar</a>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Confirmar Eliminación
+                </button>
+                <a href="{% url 'lista_transacciones' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -5,20 +5,25 @@ from decimal import Decimal
 # Modelo Categoria
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    
     def __str__(self):
         return self.nombre
 
 # Modelo MetodoPago
 class MetodoPago(models.Model):
-    nombre = models.CharField(max_length=100)
+    METODOS = [
+        ('EFECTIVO', 'Efectivo'),
+        ('QR', 'QR'),
+        ('TARJETA', 'Tarjeta'),
+    ]
+    
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=10, choices=METODOS)
     descripcion = models.TextField(blank=True, null=True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con usuario
 
     def __str__(self):
-        return self.nombre
+        return self.get_nombre_display()
 # Modelo Presupuesto
 class Presupuesto(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
